@@ -18,7 +18,7 @@ import java.util.Base64;
 public class JwtConfig {
 
     // .env의 JWT_SECRET 값 (application.properties의 app.jwt.secret을 거쳐서 옴)
-    @Value("${app.jwt.secret}")
+    @Value("${jwt.secret}")
     private String secret;
 
     // 비밀키 글자 → 도장용 열쇠
