@@ -1,0 +1,55 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.2'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+// 의존성은 단계마다 직접 추가한다 (CLAUDE.md "단계" 참고).
+// 지금은 Spring Initializr에서 아무것도 안 고른 상태와 같다: 앱을 켜는 기본 도구 + 테스트 도구만.
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// DB에 회원 저장 (Repository)
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// 신청서 검사 (@NotBlank, @Size)
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// 경비원 + BCrypt 비번 믹서기 + CSRF
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// JWT 도장 찍기·확인
+	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
+
+	// getter·생성자 자동 생성 (코드 칠 때만 필요)
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// PostgreSQL 연결 드라이버 (실행할 때만 필요)
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// DB 표를 V1, V2... 번호 붙은 SQL 파일로 만들고 관리 (Boot 4는 이 스타터가 있어야 자동으로 돌아가)
+	// implementation 'org.springframework.boot:spring-boot-starter-flyway'
+
+	// Flyway가 PostgreSQL이랑 말이 통하게 해 주는 부품
+	// runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
