@@ -48,3 +48,4 @@
 | 날짜 | 단계 | 한 일 |
 | --- | --- | --- |
 | 2026-11-21 | 0 | 빈 Spring Boot 4.1.2 프로젝트 생성 (JDK 21, 의존성은 기본 starter·test만) |
+| 2026-11-21 | 1~3 | 1단계(/hello)는 건너뜀. 의존성 한 번에 추가(webmvc·jpa·validation·security·oauth2-resource-server·lombok·postgresql). DB는 게시판 도커 `board-postgres` 안에 `login_practice` DB를 새로 만들어 사용, 접속 정보는 IntelliJ 실행 설정 환경변수(DB_URL·DB_USERNAME·DB_PASSWORD). Flyway는 쓰지 않고 `ddl-auto=update`. UserEntity(카멜: userName·nickName, 클래스 위 @Builder)·UserRepository·SecurityConfig(공개 문 /auth/signup·/auth/login·/error, STATELESS, form·basic 끔, CSRF 일단 끔)·BCrypt·SignupRequest·UserResponse·UserService(클래스 위 @Transactional, saveAndFlush+409)·AuthController(`user.controller`) 완성. `auth.http`로 201·409·400 확인. GitHub `seokam36/login-practice`(public) 연결 |
