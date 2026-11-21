@@ -1,0 +1,9 @@
+### 회원가입
+POST http://localhost:8080/auth/signup
+Content-Type: application/json
+
+{
+  "userName": "kim1234",
+  "password": "password123",
+  "nickName": "철수"
+}

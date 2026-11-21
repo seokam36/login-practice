@@ -25,7 +25,7 @@ public class SecurityConfig {
                 // 경비원 규칙/어느 문을 열고 잠글지
                 // .requestMatchers("/auth/signup", "/auth/login").permitAll() -> 회원가입이랑 로그인 오는 사람은 통과
                 // ..anyRequest().authenticated() -> 그 외 모든 요청은 로그인한 사람만 통과
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/signup","/auth/login").permitAll()
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/signup","/auth/login","/error").permitAll()
                                                                     .anyRequest().authenticated());
         return http.build();
     }
