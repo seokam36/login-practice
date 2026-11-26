@@ -3,22 +3,28 @@ package com.example.demo.config;
 import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 @Configuration
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder, BearerTokenResolver resolver) throws Exception{
         http
-                // CSRF 방어 끄기
-                .csrf(csrf -> csrf.disable())
+                // // CSRF 방어 켜기 (React 같은 SPA용)
+                .csrf(csrf -> csrf.spa())
 
                 // 서버가 기억하지 않기 -> 토큰 방식이라 세션에 쓰지 말기
                 .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -33,9 +39,12 @@ public class SecurityConfig {
                 // .requestMatchers("/auth/signup", "/auth/login").permitAll() -> 회원가입이랑 로그인 오는 사람은 통과
                 // ..anyRequest().authenticated() -> 그 외 모든 요청은 로그인한 사람만 통과
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/signup","/auth/login","/error").permitAll().anyRequest().authenticated())
-                // // JWT 검사 켜기 → 요청마다 BearerTokenResolver로 토큰 꺼내고, JwtDecoder로 도장 확인
-                .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
+                        auth.requestMatchers("/auth/signup","/auth/login","/error","/csrf").permitAll().anyRequest().authenticated())
+                // 로그인 안 한 사람이 잠긴 문에 오면 401
+                // (oauth2ResourceServer 세트를 빼면 기본값이 403이라 직접 정해 줌)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                // 검색대(쿠키 JWT 검사)를 경비원 줄에 세움 → 문 규칙 검사(AuthorizationFilter)보다 앞에
+                .addFilterBefore(jwtCookieFilter(jwtDecoder, resolver), AuthorizationFilter.class);
         return http.build();
     }
 
@@ -64,4 +73,26 @@ public class SecurityConfig {
             return null;
         };
     }
+
+    // 쿠키의 JWT를 검사하는 부품 (oauth2ResourceServer 세트 대신 단품으로 조립)
+    // 세트엔 "토큰 있으면 CSRF 면제"가 딸려 와서, 로그인한 사람 요청이 CSRF 검사를 안 받게 됨
+    private BearerTokenAuthenticationFilter jwtCookieFilter(JwtDecoder jwtDecoder, BearerTokenResolver resolver){
+        // 1. 담당자 : JwtDecoder로 도장이 진짜인지 확인
+        JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtDecoder);
+
+        // 2. 검사 부품 : 토큰을 창구(ProviderManager)에 넘겨서 담당자한테 확인받음
+        BearerTokenAuthenticationFilter filter = new BearerTokenAuthenticationFilter(new ProviderManager(provider));
+
+        // 3. 토큰은 쿠키에서 꺼내라고 알려 줌 (위에 만든 bearerTokenResolver)
+        filter.setBearerTokenResolver(resolver);
+
+        return filter;
+    }
+    /*
+    1. 확인하는 사람 뽑고 → 도장 기계 쥐여 줌
+    2. 부스에 앉힘
+    3. 검색대 세우고 → 부스랑 연결
+    4. 검색대한테 "탑승권은 쿠키에서 꺼내" 알려 줌
+    5. 완성된 검색대 돌려줌
+    */
 }

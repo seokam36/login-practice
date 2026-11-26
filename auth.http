@@ -61,3 +61,31 @@ GET http://localhost:8080/auth/me
 # @no-cookie-jar
 GET http://localhost:8080/auth/me
 
+### CSRF 쪽지 받기
+GET http://localhost:8080/csrf
+
+> {%
+    // 응답의 Set-Cookie 중에서 XSRF-TOKEN=... 줄을 찾아서, 값만 xsrf 변수에 저장
+    const line = response.headers.valuesOf("Set-Cookie").find(c => c.startsWith("XSRF-TOKEN="));
+    client.global.set("xsrf", line.split(";")[0].substring("XSRF-TOKEN=".length));
+%}
+
+### 로그인 - 쪽지 없이 (403이어야 함)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "userName": "kim1234",
+  "password": "password123"
+}
+
+### 로그인 - 쪽지 넣어서 (200)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+X-XSRF-TOKEN: {{xsrf}}
+
+{
+  "userName": "kim1234",
+  "password": "password123"
+}
+
