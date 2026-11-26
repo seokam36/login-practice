@@ -1,12 +1,13 @@
 package com.example.demo.user.service;
 
+import com.example.demo.user.dto.LoginRequest;
 import com.example.demo.user.dto.SignupRequest;
 import com.example.demo.user.dto.UserResponse;
 import com.example.demo.user.entity.UserEntity;
 import com.example.demo.user.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.repository.core.RepositoryCreationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
     public UserResponse signup(SignupRequest request){
         // 아이디 중복 체크
@@ -46,5 +48,18 @@ public class UserService {
         } catch (DataIntegrityViolationException e){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 아이디 또는 닉네임입니다.");
         }
+    }
+
+    public String login(LoginRequest request) {
+        // 1. 아이디 검사, 없으면 401
+        UserEntity user = userRepository.findByUserName(request.userName())
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 틀렸습니다."));
+        // 2. 비밀번호 검사, 없으면 401
+        if (!passwordEncoder.matches(request.password(), user.getPassword())){
+            throw (new ResponseStatusException(HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 틀렸습니다."));
+        }
+
+        // 3. accessToken에 id랑 userName넣어서 리턴
+        return tokenService.createAccessToken(user.getId(), user.getUserName());
     }
 }
