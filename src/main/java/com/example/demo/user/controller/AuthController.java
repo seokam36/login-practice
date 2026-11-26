@@ -10,10 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 
@@ -49,5 +48,11 @@ public class AuthController {
 
         // 3. ResponseEntity 파츠 완성 시키기 → 200(ok), 헤더에는 쿠키, 본문 X
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
+    }
+
+    @GetMapping
+    public UserResponse me(@AuthenticationPrincipal Jwt jwt){
+        Long userId = Long.valueOf(jwt.getSubject());
+        return userService.me(userId);
     }
 }

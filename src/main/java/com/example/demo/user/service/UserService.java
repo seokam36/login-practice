@@ -5,7 +5,6 @@ import com.example.demo.user.dto.SignupRequest;
 import com.example.demo.user.dto.UserResponse;
 import com.example.demo.user.entity.UserEntity;
 import com.example.demo.user.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -61,5 +60,9 @@ public class UserService {
 
         // 3. accessToken에 id랑 userName넣어서 리턴
         return tokenService.createAccessToken(user.getId(), user.getUserName());
+    }
+
+    public UserResponse me(Long userId) {
+        return null;
     }
 }

@@ -7,3 +7,50 @@ Content-Type: application/json
   "password": "pas",
   "nickName": "철수"
 }
+
+### 회원가입
+POST http://localhost:8080/auth/signup
+Content-Type: application/json
+
+{
+  "userName": "kim1234",
+  "password": "password123",
+  "nickName": "철수"
+}
+
+### 로그인 - 성공 (200 + Set-Cookie)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "userName": "kim1234",
+  "password": "password123"
+}
+
+### 로그인 - 비번 틀림 (401)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "userName": "kim1234",
+  "password": "wrong-password"
+}
+
+### 로그인 - 없는 아이디 (401)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "userName": "nobody",
+  "password": "password123"
+}
+
+### 로그인 - 빈칸 (400)
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "userName": "",
+  "password": ""
+}
+
