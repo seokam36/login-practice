@@ -54,3 +54,10 @@ Content-Type: application/json
   "password": ""
 }
 
+### 내 정보 - 로그인 후 (200)
+GET http://localhost:8080/auth/me
+
+### 내 정보 - 쿠키 없이 (401)
+# @no-cookie-jar
+GET http://localhost:8080/auth/me
+

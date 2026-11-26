@@ -50,7 +50,7 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
-    @GetMapping
+    @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal Jwt jwt){
         Long userId = Long.valueOf(jwt.getSubject());
         return userService.me(userId);

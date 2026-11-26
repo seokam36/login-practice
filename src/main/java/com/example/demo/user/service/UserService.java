@@ -22,6 +22,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
 
+    // 회원가입
     public UserResponse signup(SignupRequest request){
         // 아이디 중복 체크
         if (userRepository.existsByUserName(request.userName())){
@@ -49,6 +50,7 @@ public class UserService {
         }
     }
 
+    // 로그인
     public String login(LoginRequest request) {
         // 1. 아이디 검사, 없으면 401
         UserEntity user = userRepository.findByUserName(request.userName())
@@ -62,7 +64,13 @@ public class UserService {
         return tokenService.createAccessToken(user.getId(), user.getUserName());
     }
 
+    // 내정보
     public UserResponse me(Long userId) {
-        return null;
+        // 1. 회원 찾기, 없으면 404
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
+
+        // 2. 비밀번호 빼고 응답용 User 리턴
+        return UserResponse.from(user);
     }
 }
